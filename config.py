@@ -38,7 +38,7 @@ SYSTEMS = [
         "name"           : "PTT PPA",
         "BusinessService": "Client Service",
         "CategoryTier1"  : "Application",
-        "CategoryTier2"  : "PTT - Procurement Policy Advisory System (PPA)",
+        "CategoryTier2"  : "PTT – Procurement Policy Advisory System (PPA)",
         "AssignmentGroup": "AOU/F – PTT– Procurement Policy Advisory System (PPA)",
     },
 ]
