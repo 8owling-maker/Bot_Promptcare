@@ -33,11 +33,35 @@ COL_TARGET_DATE      = "target date"
 # ------------------------------------------------------------
 def login(page):
     logger.info(f"กำลัง Login ที่ {LOGIN_URL}")
-    page.goto(LOGIN_URL, wait_until="networkidle")
+    page.goto(LOGIN_URL, wait_until="domcontentloaded", timeout=60000)
 
-    page.fill("input[name='UserName'], #UserName, input[name='username'], #username", USERNAME)
-    page.fill("input[name='Password'], #Password, input[name='password'], #password", PASSWORD)
-    page.click("button[type='submit'], input[type='submit'], .btn-login")
+    # รอให้ input field ใดก็ได้ที่เป็น text/email ปรากฏขึ้นก่อน
+    page.wait_for_selector("input[type='text'], input[type='email'], input:not([type='hidden'])", timeout=30000)
+
+    # ลอง selector ทีละตัว
+    for sel in ["#UserName", "input[name='UserName']", "input[name='username']", "#username", "input[type='text']"]:
+        try:
+            page.fill(sel, USERNAME, timeout=5000)
+            logger.info(f"กรอก username ด้วย selector: {sel}")
+            break
+        except Exception:
+            continue
+
+    for sel in ["#Password", "input[name='Password']", "input[name='password']", "#password", "input[type='password']"]:
+        try:
+            page.fill(sel, PASSWORD, timeout=5000)
+            logger.info(f"กรอก password ด้วย selector: {sel}")
+            break
+        except Exception:
+            continue
+
+    for sel in ["button[type='submit']", "input[type='submit']", ".btn-login", ".btn-primary", "button"]:
+        try:
+            page.click(sel, timeout=5000)
+            logger.info(f"กด submit ด้วย selector: {sel}")
+            break
+        except Exception:
+            continue
 
     try:
         page.wait_for_url(
