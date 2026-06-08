@@ -205,6 +205,11 @@ def parse_tickets(page):
 
         days_left = (target_date - today).days
 
+        # กรอง status ที่สนใจเท่านั้น
+        ACTIVE_STATUSES = {"new", "assigned", "work in progress"}
+        if status.lower() not in ACTIVE_STATUSES:
+            continue
+
         if days_left <= ALERT_DAYS_BEFORE:
             tickets_alert.append({
                 "ticket_id"       : ticket_id,
