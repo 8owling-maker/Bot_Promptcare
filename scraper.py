@@ -186,10 +186,14 @@ def parse_tickets(page):
             i = idx.get(key)
             if i is None or i >= len(cells):
                 return "-"
-            # อ่านเฉพาะ text โดยตรง ไม่รวม child elements (เช่น popup calendar)
+            # ถ้ามี <a> tag ให้ดึง text จาก <a> ก่อน (เช่น Target Date)
+            a_tag = cells[i].query_selector("a")
+            if a_tag:
+                return a_tag.inner_text().strip() or "-"
+            # ถ้าไม่มี ดึง text node ตรงๆ ไม่รวม script/popup
             text = cells[i].evaluate(
                 "el => Array.from(el.childNodes)"
-                ".filter(n => n.nodeType === 3)"  # text node เท่านั้น
+                ".filter(n => n.nodeType === 3)"
                 ".map(n => n.textContent)"
                 ".join('').trim()"
             )
