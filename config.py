@@ -7,7 +7,7 @@ import os
 
 # --- Ticket System ---
 TICKET_URL = os.getenv("TICKET_URL", "https://promptcare.pttdigital.com/TicketSearch/Index")
-LOGIN_URL  = os.getenv("LOGIN_URL",  "https://promptcare.pttdigital.com/Account/Login")
+LOGIN_URL  = os.getenv("LOGIN_URL",  "https://promptcare.pttdigital.com/")
 USERNAME   = os.getenv("TICKET_USERNAME", "your_username")   # ← ตั้งใน Railway Variables
 PASSWORD   = os.getenv("TICKET_PASSWORD", "your_password")   # ← ตั้งใน Railway Variables
 
