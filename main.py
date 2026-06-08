@@ -7,17 +7,15 @@
 import argparse
 import logging
 import sys
-import json
-import requests
 from datetime import datetime
 import pytz
 
 import schedule
 import time
 
-from config import RUN_TIME, WORKDAYS_ONLY, TEAMS_WEBHOOK_URL
+from config import RUN_TIME, WORKDAYS_ONLY, EMAIL_SENDER, EMAIL_APP_PASSWORD, EMAIL_RECIPIENTS
 from scraper import get_sla_tickets
-from teams_notify import send_teams_message
+from email_notify import send_email
 
 # --- Logging ---
 logging.basicConfig(
@@ -46,7 +44,7 @@ def run_job():
 
     try:
         tickets = get_sla_tickets()
-        send_teams_message(tickets)
+        send_email(tickets)
         logger.info(f"✅ จบงาน — พบ Ticket แจ้งเตือน {len(tickets)} รายการ")
     except Exception as e:
         logger.exception(f"❌ เกิดข้อผิดพลาด: {e}")
@@ -54,28 +52,17 @@ def run_job():
 
 
 def _notify_error(error_msg: str):
-    """แจ้ง Teams เมื่อ Bot มีปัญหา"""
+    """แจ้ง Email เมื่อ Bot มีปัญหา"""
     try:
-        payload = {
-            "type": "message",
-            "attachments": [{
-                "contentType": "application/vnd.microsoft.card.adaptive",
-                "content": {
-                    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-                    "type": "AdaptiveCard",
-                    "version": "1.4",
-                    "body": [{
-                        "type": "TextBlock",
-                        "text": f"❌ SLA Bot Error: {error_msg[:300]}",
-                        "color": "attention",
-                        "wrap": True
-                    }]
-                }
-            }]
-        }
-        requests.post(TEAMS_WEBHOOK_URL,
-                      headers={"Content-Type": "application/json"},
-                      data=json.dumps(payload), timeout=10)
+        import smtplib
+        from email.mime.text import MIMEText
+        msg = MIMEText(f"❌ SLA Bot Error:\n\n{error_msg[:500]}", "plain", "utf-8")
+        msg["Subject"] = "❌ SLA Bot — เกิดข้อผิดพลาด"
+        msg["From"] = EMAIL_SENDER
+        msg["To"] = ", ".join(EMAIL_RECIPIENTS)
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
+            s.login(EMAIL_SENDER, EMAIL_APP_PASSWORD)
+            s.sendmail(EMAIL_SENDER, EMAIL_RECIPIENTS, msg.as_bytes())
     except Exception:
         pass
 
