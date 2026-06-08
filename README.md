@@ -106,3 +106,4 @@ python main.py --run-now
 
 **Teams ไม่รับข้อความ**
 → ตรวจสอบ Webhook URL ใน config.py และสิทธิ์ Connector ใน Teams Channel
+# SLA Bot
