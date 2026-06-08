@@ -109,7 +109,8 @@ def send_email(tickets: list):
     msg["To"] = ", ".join(EMAIL_RECIPIENTS)
     msg.attach(MIMEText(build_html(tickets), "html", "utf-8"))
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+    with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        server.starttls()
         server.login(EMAIL_SENDER, EMAIL_APP_PASSWORD)
         server.sendmail(EMAIL_SENDER, EMAIL_RECIPIENTS, msg.as_bytes())
 

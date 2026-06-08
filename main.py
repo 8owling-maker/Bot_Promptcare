@@ -60,7 +60,8 @@ def _notify_error(error_msg: str):
         msg["Subject"] = "❌ SLA Bot — เกิดข้อผิดพลาด"
         msg["From"] = EMAIL_SENDER
         msg["To"] = ", ".join(EMAIL_RECIPIENTS)
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
+        with smtplib.SMTP("smtp.gmail.com", 587) as s:
+            s.starttls()
             s.login(EMAIL_SENDER, EMAIL_APP_PASSWORD)
             s.sendmail(EMAIL_SENDER, EMAIL_RECIPIENTS, msg.as_bytes())
     except Exception:
