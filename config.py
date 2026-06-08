@@ -25,7 +25,7 @@ SYSTEMS = [
         "BusinessService": "Client Service",
         "CategoryTier1"  : "Application",
         "CategoryTier2"  : "PTTTANK - PR PO Online",
-        "AssignmentGroup": "AOU/F - PTTTANK - PR PO Online",
+        "AssignmentGroup": "AOU/F – PTTTANK – PR PO Online",
     },
     {
         "name"           : "PTT e-Tax Vendor",
