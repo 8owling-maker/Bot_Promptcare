@@ -200,10 +200,11 @@ def parse_tickets(page):
         # --- คำนวณวันที่เหลือ ---
         target_date = parse_date(target_date_str)
         if target_date is None:
-            logger.debug(f"  Parse TARGET DATE ไม่ได้: '{target_date_str}' (Ticket {ticket_id})")
+            logger.info(f"  Parse TARGET DATE ไม่ได้: '{target_date_str}' (Ticket {ticket_id})")
             continue
 
         days_left = (target_date - today).days
+        logger.info(f"  {ticket_id} | status={status} | target={target_date_str} | days_left={days_left}")
 
         # กรอง status ที่สนใจเท่านั้น
         ACTIVE_STATUSES = {"new", "assigned", "work in progress"}
