@@ -56,10 +56,34 @@ def login(page):
 #  กรอก Search Form แล้วกด Search
 # ------------------------------------------------------------
 def select2_select(page, select_id: str, label: str):
-    """เลือกค่าใน Select2 dropdown โดยใช้ select_option บน hidden select ตรงๆ"""
+    """เลือกค่าใน Select2 dropdown — จับคู่แบบ normalize dash/ช่องว่าง
+    แล้วเลือกด้วย value (ทนทานต่อ hyphen '-' vs en-dash '–')"""
+    find_value_js = """([selId, target]) => {
+        const norm = s => (s || '')
+            .replace(/[\\u2010-\\u2015\\u2212]/g, '-')  // dash ทุกชนิด → '-'
+            .replace(/\\s+/g, ' ')
+            .trim()
+            .toLowerCase();
+        const sel = document.querySelector(selId);
+        if (!sel) return null;
+        const t = norm(target);
+        for (const opt of sel.options) {
+            if (norm(opt.textContent) === t) return opt.value;
+        }
+        return null;
+    }"""
     try:
-        page.select_option(select_id, label=label, timeout=8000)
-        # trigger change event เพื่อให้ Select2 และ page อัปเดต
+        # retry รอ option ปรากฏ (กรณี dropdown โหลดแบบ dynamic เช่น AssignmentGroup)
+        value = None
+        for _ in range(10):
+            value = page.evaluate(find_value_js, [select_id, label])
+            if value is not None:
+                break
+            page.wait_for_timeout(1000)
+        if value is None:
+            logger.warning(f"  ข้ามฟิลด์ '{select_id}' — ไม่พบ option '{label}'")
+            return
+        page.select_option(select_id, value=value, timeout=8000)
         page.evaluate(f"document.querySelector('{select_id}').dispatchEvent(new Event('change', {{bubbles: true}}))")
         logger.info(f"  Set {select_id} = {label}")
         page.wait_for_timeout(1000)
