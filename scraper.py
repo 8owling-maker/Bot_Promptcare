@@ -83,6 +83,11 @@ def fill_search_form(page):
 
     page.click("button:has-text('Search'), input[value='Search']")
     page.wait_for_load_state("networkidle")
+    # รอให้ row แรกใน #tbodyTicket ปรากฏก่อน
+    try:
+        page.wait_for_selector("#tbodyTicket tr td", timeout=20000)
+    except Exception:
+        logger.warning("รอ #tbodyTicket tr td timeout — อาจไม่มีผลลัพธ์")
     logger.info("Search เสร็จแล้ว — กำลังโหลดผลลัพธ์")
 
 
