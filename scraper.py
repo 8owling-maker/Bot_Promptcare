@@ -55,19 +55,31 @@ def login(page):
 # ------------------------------------------------------------
 #  กรอก Search Form แล้วกด Search
 # ------------------------------------------------------------
+def select2_select(page, select_id: str, label: str):
+    """เลือกค่าใน Select2 dropdown โดยใช้ select_option บน hidden select ตรงๆ"""
+    try:
+        page.select_option(select_id, label=label, timeout=8000)
+        # trigger change event เพื่อให้ Select2 และ page อัปเดต
+        page.evaluate(f"document.querySelector('{select_id}').dispatchEvent(new Event('change', {{bubbles: true}}))")
+        logger.info(f"  Set {select_id} = {label}")
+        page.wait_for_timeout(1000)
+    except Exception as e:
+        logger.warning(f"  ข้ามฟิลด์ '{select_id}' — {e}")
+
+
 def fill_search_form(page):
     logger.info("เปิดหน้า Ticket Search")
     page.goto(TICKET_URL, wait_until="networkidle")
+    page.wait_for_selector("#ddlService", timeout=15000)
 
-    for field, value in SEARCH_PARAMS.items():
-        try:
-            page.select_option(f"select[name='{field}']", label=value)
-            logger.debug(f"  Set {field} = {value}")
-        except Exception:
-            try:
-                page.select_option(f"[id*='{field}'], [name*='{field}']", label=value)
-            except Exception:
-                logger.warning(f"  ข้ามฟิลด์ '{field}' — ไม่พบ element")
+    select2_select(page, "#ddlService",              SEARCH_PARAMS.get("BusinessService", ""))
+    page.wait_for_timeout(1500)
+    select2_select(page, "#ddlServicecategoryTier1", SEARCH_PARAMS.get("CategoryTier1", ""))
+    page.wait_for_timeout(1500)
+    select2_select(page, "#ddlServicecategoryTier2", SEARCH_PARAMS.get("CategoryTier2", ""))
+    page.wait_for_timeout(1500)
+    select2_select(page, "#ddlAssignGroup",          SEARCH_PARAMS.get("AssignmentGroup", ""))
+    page.wait_for_timeout(1000)
 
     page.click("button:has-text('Search'), input[value='Search']")
     page.wait_for_load_state("networkidle")
