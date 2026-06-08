@@ -186,7 +186,14 @@ def parse_tickets(page):
             i = idx.get(key)
             if i is None or i >= len(cells):
                 return "-"
-            return cells[i].inner_text().strip() or "-"
+            # อ่านเฉพาะ text โดยตรง ไม่รวม child elements (เช่น popup calendar)
+            text = cells[i].evaluate(
+                "el => Array.from(el.childNodes)"
+                ".filter(n => n.nodeType === 3)"  # text node เท่านั้น
+                ".map(n => n.textContent)"
+                ".join('').trim()"
+            )
+            return text or cells[i].inner_text().strip() or "-"
 
         target_date_str = cell("target_date")
         ticket_id       = cell("ticket_id")
