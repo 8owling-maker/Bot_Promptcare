@@ -67,8 +67,8 @@ def select2_select(page, select_id: str, label: str):
         logger.warning(f"  ข้ามฟิลด์ '{select_id}' — {e}")
 
 
-def fill_search_form(page):
-    logger.info("เปิดหน้า Ticket Search")
+def fill_search_form(page, status_label: str):
+    logger.info(f"เปิดหน้า Ticket Search (Status={status_label})")
     page.goto(TICKET_URL, wait_until="networkidle")
     page.wait_for_selector("#ddlService", timeout=15000)
 
@@ -80,15 +80,16 @@ def fill_search_form(page):
     page.wait_for_timeout(1500)
     select2_select(page, "#ddlAssignGroup",          SEARCH_PARAMS.get("AssignmentGroup", ""))
     page.wait_for_timeout(1000)
+    select2_select(page, "#ddlStatus",               status_label)
+    page.wait_for_timeout(1000)
 
     page.click("button:has-text('Search'), input[value='Search']")
     page.wait_for_load_state("networkidle")
-    # รอให้ row แรกใน #tbodyTicket ปรากฏก่อน
     try:
         page.wait_for_selector("#tbodyTicket tr td", timeout=20000)
     except Exception:
         logger.warning("รอ #tbodyTicket tr td timeout — อาจไม่มีผลลัพธ์")
-    logger.info("Search เสร็จแล้ว — กำลังโหลดผลลัพธ์")
+    logger.info(f"Search เสร็จแล้ว (Status={status_label})")
 
 
 # ------------------------------------------------------------
@@ -222,11 +223,6 @@ def parse_tickets(page):
         days_left = (target_date - today).days
         logger.info(f"  {ticket_id} | status={status} | target={target_date_str} | days_left={days_left}")
 
-        # กรอง status ที่สนใจเท่านั้น
-        ACTIVE_STATUSES = {"new", "assigned", "work in progress"}
-        if status.lower() not in ACTIVE_STATUSES:
-            continue
-
         if days_left <= ALERT_DAYS_BEFORE:
             tickets_alert.append({
                 "ticket_id"       : ticket_id,
@@ -252,7 +248,11 @@ def parse_tickets(page):
 #  Entry Point
 # ------------------------------------------------------------
 def get_sla_tickets():
-    """เปิด Browser → Login → Search → Load all → Parse → คืน list"""
+    """เปิด Browser → Login → Search 3 รอบ (แยก status) → รวมผล → คืน list"""
+    statuses = ["WORK IN PROGRESS", "ASSIGNED", "NEW"]
+    all_tickets = []
+    seen_ids = set()
+
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=HEADLESS)
         context = browser.new_context()
@@ -260,10 +260,18 @@ def get_sla_tickets():
 
         try:
             login(page)
-            fill_search_form(page)
-            load_all_rows(page)       # ← กด Load more จนครบ
-            tickets = parse_tickets(page)
+            for status in statuses:
+                logger.info(f"{'='*40}")
+                logger.info(f"🔍 ค้นหา Status: {status}")
+                fill_search_form(page, status)
+                load_all_rows(page)
+                tickets = parse_tickets(page)
+                for t in tickets:
+                    if t["ticket_id"] not in seen_ids:
+                        seen_ids.add(t["ticket_id"])
+                        all_tickets.append(t)
         finally:
             browser.close()
 
-    return tickets
+    logger.info(f"รวมทั้งหมด {len(all_tickets)} รายการจาก 3 status")
+    return all_tickets
