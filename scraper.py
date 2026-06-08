@@ -174,7 +174,7 @@ def parse_tickets(page):
         return []
 
     # --- อ่านทุก Row ---
-    rows = page.query_selector_all("table tbody tr")
+    rows = page.query_selector_all("#tbodyTicket tr")
     logger.info(f"พบแถวทั้งหมด {len(rows)} แถว")
 
     for row in rows:
