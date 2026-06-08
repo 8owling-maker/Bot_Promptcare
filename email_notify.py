@@ -50,6 +50,7 @@ def build_html(tickets: list) -> str:
         rows += f"""
         <tr style="background:{bg}">
             <td style="{td}"><b>{t.get('ticket_id','-')}</b></td>
+            <td style="{td}">{t.get('system','-')}</td>
             <td style="{td}">{t.get('subject','-')}</td>
             <td style="{td}">{t.get('status','-')}</td>
             <td style="{td}">{t.get('priority','-')}</td>
@@ -69,6 +70,7 @@ def build_html(tickets: list) -> str:
         <thead style="background:#1565c0;color:white">
             <tr>
                 <th style="{th}">Ticket ID</th>
+                <th style="{th}">ระบบ</th>
                 <th style="{th}">Subject</th>
                 <th style="{th}">Status</th>
                 <th style="{th}">Priority</th>

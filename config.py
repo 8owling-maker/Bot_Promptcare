@@ -11,14 +11,37 @@ LOGIN_URL  = os.getenv("LOGIN_URL",  "https://promptcare.pttdigital.com/")
 USERNAME   = os.getenv("TICKET_USERNAME", "your_username")   # ← ตั้งใน Railway Variables
 PASSWORD   = os.getenv("TICKET_PASSWORD", "your_password")   # ← ตั้งใน Railway Variables
 
-# --- Search Criteria ---
-SEARCH_PARAMS = {
-    "SearchType"     : "Ticket",
-    "BusinessService": "Client Service",
-    "CategoryTier1"  : "Application",
-    "CategoryTier2"  : "PTT - Smart Procurement (SP)",
-    "AssignmentGroup": "AOU/F - PTT - Smart Procurement",
-}
+# --- Search Criteria (หลายระบบ) ---
+SYSTEMS = [
+    {
+        "name"           : "PTT Smart Procurement",
+        "BusinessService": "Client Service",
+        "CategoryTier1"  : "Application",
+        "CategoryTier2"  : "PTT - Smart Procurement (SP)",
+        "AssignmentGroup": "AOU/F - PTT - Smart Procurement",
+    },
+    {
+        "name"           : "PTTTANK PR/PO Online",
+        "BusinessService": "Client Service",
+        "CategoryTier1"  : "Application",
+        "CategoryTier2"  : "PTTTANK - PR PO Online",
+        "AssignmentGroup": "AOU/F - PTTTANK - PR PO Online",
+    },
+    {
+        "name"           : "PTT e-Tax Vendor",
+        "BusinessService": "Client Service",
+        "CategoryTier1"  : "Application",
+        "CategoryTier2"  : "PTT - E-Tax Vendor",
+        "AssignmentGroup": "AOU/F - PTT - E-Tax Vendor",
+    },
+    {
+        "name"           : "PTT PPA",
+        "BusinessService": "Client Service",
+        "CategoryTier1"  : "Application",
+        "CategoryTier2"  : "PTT - Procurement Policy Advisory System (PPA)",
+        "AssignmentGroup": "AOU/F - PTT- Procurement Policy Advisory System (PPA)",
+    },
+]
 
 # --- SLA Alert ---
 ALERT_DAYS_BEFORE = int(os.getenv("ALERT_DAYS_BEFORE", "1"))

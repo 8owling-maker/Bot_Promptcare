@@ -12,7 +12,7 @@ from datetime import date, datetime, timedelta
 from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
 from config import (
     LOGIN_URL, TICKET_URL, USERNAME, PASSWORD,
-    SEARCH_PARAMS, ALERT_DAYS_BEFORE, HEADLESS
+    SYSTEMS, ALERT_DAYS_BEFORE, HEADLESS
 )
 
 logger = logging.getLogger(__name__)
@@ -67,18 +67,18 @@ def select2_select(page, select_id: str, label: str):
         logger.warning(f"  ข้ามฟิลด์ '{select_id}' — {e}")
 
 
-def fill_search_form(page, status_label: str):
-    logger.info(f"เปิดหน้า Ticket Search (Status={status_label})")
+def fill_search_form(page, system: dict, status_label: str):
+    logger.info(f"เปิดหน้า Ticket Search [{system['name']}] Status={status_label}")
     page.goto(TICKET_URL, wait_until="networkidle")
     page.wait_for_selector("#ddlService", timeout=15000)
 
-    select2_select(page, "#ddlService",              SEARCH_PARAMS.get("BusinessService", ""))
+    select2_select(page, "#ddlService",              system.get("BusinessService", ""))
     page.wait_for_timeout(1500)
-    select2_select(page, "#ddlServicecategoryTier1", SEARCH_PARAMS.get("CategoryTier1", ""))
+    select2_select(page, "#ddlServicecategoryTier1", system.get("CategoryTier1", ""))
     page.wait_for_timeout(1500)
-    select2_select(page, "#ddlServicecategoryTier2", SEARCH_PARAMS.get("CategoryTier2", ""))
+    select2_select(page, "#ddlServicecategoryTier2", system.get("CategoryTier2", ""))
     page.wait_for_timeout(1500)
-    select2_select(page, "#ddlAssignGroup",          SEARCH_PARAMS.get("AssignmentGroup", ""))
+    select2_select(page, "#ddlAssignGroup",          system.get("AssignmentGroup", ""))
     page.wait_for_timeout(1000)
     select2_select(page, "#ddlStatus",               status_label)
     page.wait_for_timeout(1000)
@@ -89,7 +89,7 @@ def fill_search_form(page, status_label: str):
         page.wait_for_selector("#tbodyTicket tr td", timeout=20000)
     except Exception:
         logger.warning("รอ #tbodyTicket tr td timeout — อาจไม่มีผลลัพธ์")
-    logger.info(f"Search เสร็จแล้ว (Status={status_label})")
+    logger.info(f"Search เสร็จแล้ว [{system['name']}] Status={status_label}")
 
 
 # ------------------------------------------------------------
@@ -248,7 +248,7 @@ def parse_tickets(page):
 #  Entry Point
 # ------------------------------------------------------------
 def get_sla_tickets():
-    """เปิด Browser → Login → Search 3 รอบ (แยก status) → รวมผล → คืน list"""
+    """Login ครั้งเดียว → loop 4 ระบบ × 3 status → รวมผล → คืน list"""
     statuses = ["WORK IN PROGRESS", "ASSIGNED", "NEW"]
     all_tickets = []
     seen_ids = set()
@@ -260,18 +260,20 @@ def get_sla_tickets():
 
         try:
             login(page)
-            for status in statuses:
-                logger.info(f"{'='*40}")
-                logger.info(f"🔍 ค้นหา Status: {status}")
-                fill_search_form(page, status)
-                load_all_rows(page)
-                tickets = parse_tickets(page)
-                for t in tickets:
-                    if t["ticket_id"] not in seen_ids:
-                        seen_ids.add(t["ticket_id"])
-                        all_tickets.append(t)
+            for system in SYSTEMS:
+                for status in statuses:
+                    logger.info(f"{'='*50}")
+                    logger.info(f"🔍 [{system['name']}] Status={status}")
+                    fill_search_form(page, system, status)
+                    load_all_rows(page)
+                    tickets = parse_tickets(page)
+                    for t in tickets:
+                        if t["ticket_id"] not in seen_ids:
+                            seen_ids.add(t["ticket_id"])
+                            t["system"] = system["name"]
+                            all_tickets.append(t)
         finally:
             browser.close()
 
-    logger.info(f"รวมทั้งหมด {len(all_tickets)} รายการจาก 3 status")
+    logger.info(f"รวมทั้งหมด {len(all_tickets)} รายการจาก {len(SYSTEMS)} ระบบ")
     return all_tickets
