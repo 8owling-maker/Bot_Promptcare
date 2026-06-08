@@ -23,10 +23,10 @@ SEARCH_PARAMS = {
 # --- SLA Alert ---
 ALERT_DAYS_BEFORE = int(os.getenv("ALERT_DAYS_BEFORE", "1"))
 
-# --- Email (Gmail) ---
-EMAIL_SENDER       = os.getenv("EMAIL_SENDER",       "8owling@gmail.com")
-EMAIL_APP_PASSWORD = os.getenv("EMAIL_APP_PASSWORD", "")           # ← ตั้งใน Railway Variables
-EMAIL_RECIPIENTS   = os.getenv("EMAIL_RECIPIENTS",   "zphanumas.c@pttdigital.com").split(",")
+# --- Email (Resend) ---
+RESEND_API_KEY   = os.getenv("RESEND_API_KEY",   "")
+EMAIL_SENDER     = os.getenv("EMAIL_SENDER",     "onboarding@resend.dev")
+EMAIL_RECIPIENTS = os.getenv("EMAIL_RECIPIENTS", "zphanumas.c@pttdigital.com").split(",")
 
 # --- Schedule ---
 RUN_TIME      = os.getenv("RUN_TIME", "09:00")   # Bangkok = UTC+7 → ต้องตั้ง TZ ด้วย

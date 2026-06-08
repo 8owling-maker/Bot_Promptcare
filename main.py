@@ -13,7 +13,7 @@ import pytz
 import schedule
 import time
 
-from config import RUN_TIME, WORKDAYS_ONLY, EMAIL_SENDER, EMAIL_APP_PASSWORD, EMAIL_RECIPIENTS
+from config import RUN_TIME, WORKDAYS_ONLY, EMAIL_SENDER, RESEND_API_KEY, EMAIL_RECIPIENTS
 from scraper import get_sla_tickets
 from email_notify import send_email
 
@@ -54,16 +54,14 @@ def run_job():
 def _notify_error(error_msg: str):
     """แจ้ง Email เมื่อ Bot มีปัญหา"""
     try:
-        import smtplib
-        from email.mime.text import MIMEText
-        msg = MIMEText(f"❌ SLA Bot Error:\n\n{error_msg[:500]}", "plain", "utf-8")
-        msg["Subject"] = "❌ SLA Bot — เกิดข้อผิดพลาด"
-        msg["From"] = EMAIL_SENDER
-        msg["To"] = ", ".join(EMAIL_RECIPIENTS)
-        with smtplib.SMTP("smtp.gmail.com", 587) as s:
-            s.starttls()
-            s.login(EMAIL_SENDER, EMAIL_APP_PASSWORD)
-            s.sendmail(EMAIL_SENDER, EMAIL_RECIPIENTS, msg.as_bytes())
+        import resend
+        resend.api_key = RESEND_API_KEY
+        resend.Emails.send({
+            "from": f"SLA Bot <{EMAIL_SENDER}>",
+            "to": EMAIL_RECIPIENTS,
+            "subject": "❌ SLA Bot — เกิดข้อผิดพลาด",
+            "text": f"❌ SLA Bot Error:\n\n{error_msg[:500]}",
+        })
     except Exception:
         pass
 

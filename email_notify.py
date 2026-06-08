@@ -1,14 +1,12 @@
 # ============================================================
-#  email_notify.py — ส่งแจ้งเตือน SLA ทาง Gmail
+#  email_notify.py — ส่งแจ้งเตือน SLA ทาง Resend API
 # ============================================================
 
-import smtplib
+import resend
 import logging
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from datetime import date
 from config import (
-    EMAIL_SENDER, EMAIL_APP_PASSWORD,
+    EMAIL_SENDER, RESEND_API_KEY,
     EMAIL_RECIPIENTS, ALERT_DAYS_BEFORE
 )
 
@@ -103,15 +101,12 @@ def send_email(tickets: list):
         else f"⚠️ แจ้งเตือน SLA {len(tickets)} รายการ — {today_str}"
     )
 
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = EMAIL_SENDER
-    msg["To"] = ", ".join(EMAIL_RECIPIENTS)
-    msg.attach(MIMEText(build_html(tickets), "html", "utf-8"))
-
-    with smtplib.SMTP("smtp.gmail.com", 587) as server:
-        server.starttls()
-        server.login(EMAIL_SENDER, EMAIL_APP_PASSWORD)
-        server.sendmail(EMAIL_SENDER, EMAIL_RECIPIENTS, msg.as_bytes())
+    resend.api_key = RESEND_API_KEY
+    resend.Emails.send({
+        "from": f"SLA Bot <{EMAIL_SENDER}>",
+        "to": EMAIL_RECIPIENTS,
+        "subject": subject,
+        "html": build_html(tickets),
+    })
 
     logger.info(f"✅ ส่ง Email สำเร็จ ({len(tickets)} รายการ) → {EMAIL_RECIPIENTS}")
