@@ -77,7 +77,7 @@ def fill_search_form(page, system: dict, status_label: str):
     select2_select(page, "#ddlServicecategoryTier1", system.get("CategoryTier1", ""))
     page.wait_for_timeout(1500)
     select2_select(page, "#ddlServicecategoryTier2", system.get("CategoryTier2", ""))
-    page.wait_for_timeout(1500)
+    page.wait_for_timeout(3000)  # รอให้ AssignmentGroup dropdown โหลดค่าใหม่
     select2_select(page, "#ddlAssignGroup",          system.get("AssignmentGroup", ""))
     page.wait_for_timeout(1000)
     select2_select(page, "#ddlStatus",               status_label)
