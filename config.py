@@ -52,7 +52,7 @@ EMAIL_SENDER     = os.getenv("EMAIL_SENDER",     "onboarding@resend.dev")
 EMAIL_RECIPIENTS = os.getenv("EMAIL_RECIPIENTS", "zphanumas.c@pttdigital.com").split(",")
 
 # --- Schedule ---
-RUN_TIME      = os.getenv("RUN_TIME", "09:00")   # Bangkok = UTC+7 → ต้องตั้ง TZ ด้วย
+RUN_TIME      = os.getenv("RUN_TIME", "17:30")   # Bangkok = UTC+7 → ต้องตั้ง TZ ด้วย
 WORKDAYS_ONLY = os.getenv("WORKDAYS_ONLY", "true").lower() == "true"
 
 # --- Browser (Railway ต้องใช้ headless=True เสมอ) ---
